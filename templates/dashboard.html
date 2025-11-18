@@ -10,7 +10,6 @@
     --main-green-hover: #146c43;
 }
 
-/* Remplace les anciens bleus */
 .navbar, .bg-primary {
     background-color: var(--main-green) !important;
 }
@@ -37,14 +36,89 @@
 .sidebar {
     background-color: var(--main-green) !important;
 }
+
+.stat-card {
+    border-left: 4px solid var(--main-green-light);
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--main-green);
+}
+
+.stat-label {
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255,255,255,0.8);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+.loading-overlay.show {
+    display: flex;
+}
+
+.spinner-border {
+    color: var(--main-green-light);
+}
 </style>
 
 <div class="container-fluid">
-  <h2 class="mb-3">Vue d'ensemble</h2>
+  <h2 class="mb-4">Tableau de Bord Agricole</h2>
+
+  <!-- Statistics Summary Cards -->
+  <div class="row mb-4">
+    <div class="col-md-3 col-sm-6 mb-3">
+      <div class="card stat-card">
+        <div class="card-body">
+          <div class="stat-value" id="stat-countries">-</div>
+          <div class="stat-label">Pays Analysés</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+      <div class="card stat-card">
+        <div class="card-body">
+          <div class="stat-value" id="stat-products">-</div>
+          <div class="stat-label">Produits Suivis</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+      <div class="card stat-card">
+        <div class="card-body">
+          <div class="stat-value" id="stat-years">-</div>
+          <div class="stat-label">Années de Données</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+      <div class="card stat-card">
+        <div class="card-body">
+          <div class="stat-value" id="stat-records">-</div>
+          <div class="stat-label">Enregistrements Totaux</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="mb-3">Analyses Détaillées</h3>
 
   <!-- 1 - Production timeseries -->
   <div class="card mb-3 chart">
-    <div class="card-body">
+    <div class="card-body position-relative">
+      <div class="loading-overlay"><div class="spinner-border" role="status"></div></div>
       <h5>1. Production — Série Temporelle</h5>
       <form id="form-prod-ts" class="row g-2 align-items-end">
         <div class="col-auto">
@@ -71,7 +145,8 @@
 
   <!-- 2 - Top N producers -->
   <div class="card mb-3 chart">
-    <div class="card-body">
+    <div class="card-body position-relative">
+      <div class="loading-overlay"><div class="spinner-border" role="status"></div></div>
       <h5>2. Top N producteurs (barres)</h5>
       <form id="form-top" class="row g-2 align-items-end">
         <div class="col-auto">
@@ -102,7 +177,8 @@
 
   <!-- 3 - Production vs Price scatter -->
   <div class="card mb-3 chart">
-    <div class="card-body">
+    <div class="card-body position-relative">
+      <div class="loading-overlay"><div class="spinner-border" role="status"></div></div>
       <h5>3. Production vs Prix (scatter)</h5>
       <form id="form-scatter" class="row g-2 align-items-end">
         <div class="col-auto">
@@ -136,7 +212,8 @@
 
   <!-- 4 - Double axis: fertilizer vs production -->
   <div class="card mb-3 chart">
-    <div class="card-body">
+    <div class="card-body position-relative">
+      <div class="loading-overlay"><div class="spinner-border" role="status"></div></div>
       <h5>4. Engrais vs Production (double axe)</h5>
       <form id="form-fert" class="row g-2 align-items-end">
         <div class="col-auto">
@@ -170,19 +247,20 @@
 
   <!-- 5 - Price timeseries -->
   <div class="card mb-3 chart">
-    <div class="card-body">
+    <div class="card-body position-relative">
+      <div class="loading-overlay"><div class="spinner-border" role="status"></div></div>
       <h5>5. Prix — Série Temporelle</h5>
       <form id="form-price-ts" class="row g-2 align-items-end">
         <div class="col-auto">
           <label>Product</label>
-          <select id="pt_product" class="form-select">
+          <select id="price_product" class="form-select">
             <option value="">--</option>
             {% for p in products %}<option value="{{ p }}">{{ p }}</option>{% endfor %}
           </select>
         </div>
         <div class="col-auto">
           <label>Country</label>
-          <select id="pt_country2" class="form-select">
+          <select id="price_country" class="form-select">
             <option value="">Tous</option>
             {% for c in countries %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
           </select>
@@ -197,7 +275,8 @@
 
   <!-- 6 - Price choropleth (bar fallback) -->
   <div class="card mb-3 chart">
-    <div class="card-body">
+    <div class="card-body position-relative">
+      <div class="loading-overlay"><div class="spinner-border" role="status"></div></div>
       <h5>6. Prix par Pays (Carte / Bar Chart)</h5>
       <form id="form-choropleth" class="row g-2 align-items-end">
         <div class="col-auto">
@@ -224,7 +303,8 @@
 
   <!-- 7 - FDI stacked -->
   <div class="card mb-3 chart">
-    <div class="card-body">
+    <div class="card-body position-relative">
+      <div class="loading-overlay"><div class="spinner-border" role="status"></div></div>
       <h5>7. IDE Entrants — Barres Empilées</h5>
       <form id="form-fdi" class="row g-2 align-items-end">
         <div class="col-auto">
@@ -244,7 +324,8 @@
 
   <!-- 8 - Price boxplot -->
   <div class="card mb-3 chart">
-    <div class="card-body">
+    <div class="card-body position-relative">
+      <div class="loading-overlay"><div class="spinner-border" role="status"></div></div>
       <h5>8. Distribution des Prix — Boxplot</h5>
       <form id="form-box" class="row g-2 align-items-end">
         <div class="col-auto">
@@ -271,7 +352,8 @@
 
   <!-- 9 - Land share gauge -->
   <div class="card mb-3 chart">
-    <div class="card-body">
+    <div class="card-body position-relative">
+      <div class="loading-overlay"><div class="spinner-border" role="status"></div></div>
       <h5>9. Part des terres agricoles — Jauge</h5>
       <form id="form-land" class="row g-2 align-items-end">
         <div class="col-auto">
@@ -298,7 +380,8 @@
 
   <!-- 10 - Employment timeseries -->
   <div class="card mb-3 chart">
-    <div class="card-body">
+    <div class="card-body position-relative">
+      <div class="loading-overlay"><div class="spinner-border" role="status"></div></div>
       <h5>10. Emploi — Série Temporelle</h5>
       <form id="form-emp" class="row g-2 align-items-end">
         <div class="col-auto">
@@ -322,7 +405,8 @@
 
   <!-- 11 - Employment vs Production scatter -->
   <div class="card mb-3 chart">
-    <div class="card-body">
+    <div class="card-body position-relative">
+      <div class="loading-overlay"><div class="spinner-border" role="status"></div></div>
       <h5>11. Emploi vs Production (scatter)</h5>
       <form id="form-emp-prod" class="row g-2 align-items-end">
         <div class="col-auto">
@@ -359,16 +443,66 @@
 
 {% block scripts %}
 <script>
-  // helper
+  // helpers
   const q = (obj) => Object.entries(obj).filter(([k,v]) => v !== "" && v !== null && v !== undefined).map(([k,v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`).join("&");
+
+  function showLoading(chartId) {
+    const chart = document.getElementById(chartId);
+    if (chart) {
+      const overlay = chart.closest('.card-body').querySelector('.loading-overlay');
+      if (overlay) overlay.classList.add('show');
+    }
+  }
+
+  function hideLoading(chartId) {
+    const chart = document.getElementById(chartId);
+    if (chart) {
+      const overlay = chart.closest('.card-body').querySelector('.loading-overlay');
+      if (overlay) overlay.classList.remove('show');
+    }
+  }
+
+  function handleError(chartId, error) {
+    console.error('Error loading chart:', error);
+    const chart = document.getElementById(chartId);
+    if (chart) {
+      chart.innerHTML = '<div class="alert alert-warning">Erreur de chargement. Vérifiez les filtres.</div>';
+    }
+  }
+
+  // Load statistics
+  async function loadStats() {
+    try {
+      const countries = {{ countries|length }};
+      const products = {{ products|length }};
+      const years = {{ years|length }};
+
+      document.getElementById('stat-countries').textContent = countries;
+      document.getElementById('stat-products').textContent = products;
+      document.getElementById('stat-years').textContent = years;
+
+      const res = await fetch('/api/production/timeseries/');
+      const data = await res.json();
+      document.getElementById('stat-records').textContent = data.length.toLocaleString();
+    } catch(err) {
+      console.error('Error loading stats:', err);
+    }
+  }
 
   // 1 - production timeseries
   async function loadProdTS() {
-    const params = q({product: document.getElementById('pt_product')?.value, country: document.getElementById('pt_country')?.value});
-    const res = await fetch(`/api/production/timeseries/?${params}`);
-    const data = await res.json();
-    const x = data.map(d=>d.year), y = data.map(d=>d.value);
-    Plotly.react('chart-prod-ts', [{x,y,type:'scatter',mode:'lines+markers'}], {title:'Production annuelle'});
+    showLoading('chart-prod-ts');
+    try {
+      const params = q({product: document.getElementById('pt_product')?.value, country: document.getElementById('pt_country')?.value});
+      const res = await fetch(`/api/production/timeseries/?${params}`);
+      const data = await res.json();
+      const x = data.map(d=>d.year), y = data.map(d=>d.value);
+      Plotly.react('chart-prod-ts', [{x,y,type:'scatter',mode:'lines+markers',line:{color:'var(--main-green-light)'}}], {title:'Production annuelle totale'});
+    } catch(err) {
+      handleError('chart-prod-ts', err);
+    } finally {
+      hideLoading('chart-prod-ts');
+    }
   }
   document.getElementById('btn-prod-ts').addEventListener('click', (e)=>{ e.preventDefault(); loadProdTS(); });
 
@@ -378,10 +512,17 @@
     const year = document.getElementById('top_year').value;
     const n = document.getElementById('top_n').value;
     if (!product || !year) { alert('Choisir product & year'); return;}
-    const res = await fetch(`/api/production/top/?product=${encodeURIComponent(product)}&year=${encodeURIComponent(year)}&n=${n}`);
-    const data = await res.json();
-    const y = data.map(d=>d.country), x = data.map(d=>d.value);
-    Plotly.react('chart-top', [{x,y,type:'bar',orientation:'h'}], {title:`Top ${n} producteurs - ${product} (${year})`});
+    showLoading('chart-top');
+    try {
+      const res = await fetch(`/api/production/top/?product=${encodeURIComponent(product)}&year=${encodeURIComponent(year)}&n=${n}`);
+      const data = await res.json();
+      const y = data.map(d=>d.country), x = data.map(d=>d.value);
+      Plotly.react('chart-top', [{x,y,type:'bar',orientation:'h',marker:{color:'var(--main-green-light)'}}], {title:`Top ${n} producteurs - ${product} (${year})`,xaxis:{title:'Production'}});
+    } catch(err) {
+      handleError('chart-top', err);
+    } finally {
+      hideLoading('chart-top');
+    }
   }
   document.getElementById('btn-top').addEventListener('click', (e)=>{ e.preventDefault(); loadTop(); });
 
@@ -391,11 +532,18 @@
     const year = document.getElementById('sc_year').value;
     const country = document.getElementById('sc_country').value;
     if (!product) { alert('Choisir product'); return; }
-    const params = q({product, year, country});
-    const res = await fetch(`/api/production/vs-price/?${params}`);
-    const data = await res.json();
-    const x = data.map(d=>d.production_quantity), y = data.map(d=>d.price), text = data.map(d=>d.country);
-    Plotly.react('chart-scatter', [{x,y,mode:'markers',text,marker:{size:10}}], {title:'Production vs Prix', xaxis:{title:'Production'}, yaxis:{title:'Prix'}});
+    showLoading('chart-scatter');
+    try {
+      const params = q({product, year, country});
+      const res = await fetch(`/api/production/vs-price/?${params}`);
+      const data = await res.json();
+      const x = data.map(d=>d.production_quantity), y = data.map(d=>d.price), text = data.map(d=>d.country);
+      Plotly.react('chart-scatter', [{x,y,mode:'markers',text,marker:{size:12,color:'var(--main-green-light)',opacity:0.7}}], {title:'Production vs Prix', xaxis:{title:'Quantité de Production'}, yaxis:{title:'Prix Moyen'}});
+    } catch(err) {
+      handleError('chart-scatter', err);
+    } finally {
+      hideLoading('chart-scatter');
+    }
   }
   document.getElementById('btn-scatter').addEventListener('click', (e)=>{ e.preventDefault(); loadScatter(); });
 
@@ -403,26 +551,40 @@
   async function loadFert() {
     const product = document.getElementById('f_product').value;
     if (!product) { alert('Choisir product'); return; }
-    const params = q({product, country:document.getElementById('f_country').value, fertilizer_type:document.getElementById('f_type').value});
-    const res = await fetch(`/api/production/fertilizer-vs-production/?${params}`);
-    const d = await res.json();
-    const yrs = d.years, prod = d.production, fert = d.fertilizer;
-    const t1 = {x:yrs, y:prod, name:'Production', yaxis:'y1', type:'scatter', mode:'lines+markers'};
-    const t2 = {x:yrs, y:fert, name:'Engrais', yaxis:'y2', type:'scatter', mode:'lines+markers'};
-    const layout = {title:'Engrais vs Production', yaxis:{title:'Production'}, yaxis2:{title:'Engrais', overlaying:'y', side:'right'}};
-    Plotly.react('chart-fert', [t1,t2], layout);
+    showLoading('chart-fert');
+    try {
+      const params = q({product, country:document.getElementById('f_country').value, fertilizer_type:document.getElementById('f_type').value});
+      const res = await fetch(`/api/production/fertilizer-vs-production/?${params}`);
+      const d = await res.json();
+      const yrs = d.years, prod = d.production, fert = d.fertilizer;
+      const t1 = {x:yrs, y:prod, name:'Production', yaxis:'y1', type:'scatter', mode:'lines+markers',line:{color:'#198754'}};
+      const t2 = {x:yrs, y:fert, name:'Engrais', yaxis:'y2', type:'scatter', mode:'lines+markers',line:{color:'#fd7e14'}};
+      const layout = {title:'Utilisation Engrais vs Production', yaxis:{title:'Production'}, yaxis2:{title:'Quantité Engrais', overlaying:'y', side:'right'}};
+      Plotly.react('chart-fert', [t1,t2], layout);
+    } catch(err) {
+      handleError('chart-fert', err);
+    } finally {
+      hideLoading('chart-fert');
+    }
   }
   document.getElementById('btn-fert').addEventListener('click', (e)=>{ e.preventDefault(); loadFert(); });
 
   // 5 - price timeseries
   async function loadPriceTS() {
-    const product = document.getElementById('pt_product').value;
+    const product = document.getElementById('price_product').value;
     if (!product) { alert('Choisir product'); return; }
-    const params = q({product, country: document.getElementById('pt_country2').value});
-    const res = await fetch(`/api/price/timeseries/?${params}`);
-    const data = await res.json();
-    const x = data.map(d=>d.year), y = data.map(d=>d.value);
-    Plotly.react('chart-price-ts', [{x,y,type:'scatter',mode:'lines+markers'}], {title:'Prix moyen'});
+    showLoading('chart-price-ts');
+    try {
+      const params = q({product, country: document.getElementById('price_country').value});
+      const res = await fetch(`/api/price/timeseries/?${params}`);
+      const data = await res.json();
+      const x = data.map(d=>d.year), y = data.map(d=>d.value);
+      Plotly.react('chart-price-ts', [{x,y,type:'scatter',mode:'lines+markers',line:{color:'var(--main-green-light)'}}], {title:'Prix moyen par année'});
+    } catch(err) {
+      handleError('chart-price-ts', err);
+    } finally {
+      hideLoading('chart-price-ts');
+    }
   }
   document.getElementById('btn-price-ts').addEventListener('click', (e)=>{ e.preventDefault(); loadPriceTS(); });
 
@@ -431,10 +593,17 @@
     const product = document.getElementById('ch_product').value;
     const year = document.getElementById('ch_year').value;
     if (!product || !year) { alert('Choisir product & year'); return; }
-    const res = await fetch(`/api/price/by-country/?product=${encodeURIComponent(product)}&year=${encodeURIComponent(year)}`);
-    const data = await res.json();
-    const x = data.map(d=>d.country), y = data.map(d=>d.value);
-    Plotly.react('chart-choropleth', [{x,y,type:'bar'}], {title:`Prix par pays (${product} - ${year})`});
+    showLoading('chart-choropleth');
+    try {
+      const res = await fetch(`/api/price/by-country/?product=${encodeURIComponent(product)}&year=${encodeURIComponent(year)}`);
+      const data = await res.json();
+      const x = data.map(d=>d.country), y = data.map(d=>d.value);
+      Plotly.react('chart-choropleth', [{x,y,type:'bar',marker:{color:'var(--main-green-light)'}}], {title:`Prix par pays (${product} - ${year})`,xaxis:{title:'Pays'},yaxis:{title:'Prix Moyen'}});
+    } catch(err) {
+      handleError('chart-choropleth', err);
+    } finally {
+      hideLoading('chart-choropleth');
+    }
   }
   document.getElementById('btn-choropleth').addEventListener('click', (e)=>{ e.preventDefault(); loadChoropleth(); });
 
@@ -442,11 +611,18 @@
   async function loadFDI() {
     const year = document.getElementById('fdi_year').value;
     if (!year) { alert('Choisir year'); return; }
-    const res = await fetch(`/api/fdi/stacked/?year=${encodeURIComponent(year)}`);
-    const data = await res.json();
-    const receiving = data.receiving, investing = data.investing, matrix = data.matrix;
-    const traces = investing.map(inv => ({x: receiving, y: matrix[inv], name: inv, type: 'bar'}));
-    Plotly.react('chart-fdi', traces, {barmode:'stack', title:`IDE entrants (${year})`});
+    showLoading('chart-fdi');
+    try {
+      const res = await fetch(`/api/fdi/stacked/?year=${encodeURIComponent(year)}`);
+      const data = await res.json();
+      const receiving = data.receiving, investing = data.investing, matrix = data.matrix;
+      const traces = investing.map(inv => ({x: receiving, y: matrix[inv], name: inv, type: 'bar'}));
+      Plotly.react('chart-fdi', traces, {barmode:'stack', title:`Investissements Directs Étrangers (${year})`,xaxis:{title:'Pays Receveur'},yaxis:{title:'Montant Investi'}});
+    } catch(err) {
+      handleError('chart-fdi', err);
+    } finally {
+      hideLoading('chart-fdi');
+    }
   }
   document.getElementById('btn-fdi').addEventListener('click', (e)=>{ e.preventDefault(); loadFDI(); });
 
@@ -454,10 +630,17 @@
   async function loadBox() {
     const product = document.getElementById('bx_product').value;
     if (!product) { alert('Choisir product'); return; }
-    const res = await fetch(`/api/price/boxplot/?product=${encodeURIComponent(product)}&country=${encodeURIComponent(document.getElementById('bx_country').value)}`);
-    const data = await res.json();
-    const traces = data.map(g => ({y: g.values, type:'box', name: g.country}));
-    Plotly.react('chart-box', traces, {title:'Distribution des prix'});
+    showLoading('chart-box');
+    try {
+      const res = await fetch(`/api/price/boxplot/?product=${encodeURIComponent(product)}&country=${encodeURIComponent(document.getElementById('bx_country').value)}`);
+      const data = await res.json();
+      const traces = data.map(g => ({y: g.values, type:'box', name: g.country,marker:{color:'var(--main-green-light)'}}));
+      Plotly.react('chart-box', traces, {title:'Distribution des prix par pays',yaxis:{title:'Prix'}});
+    } catch(err) {
+      handleError('chart-box', err);
+    } finally {
+      hideLoading('chart-box');
+    }
   }
   document.getElementById('btn-box').addEventListener('click', (e)=>{ e.preventDefault(); loadBox(); });
 
@@ -466,11 +649,18 @@
     const country = document.getElementById('land_country').value;
     const year = document.getElementById('land_year').value;
     if (!country || !year) { alert('Choisir country & year'); return; }
-    const res = await fetch(`/api/land/share/?country=${encodeURIComponent(country)}&year=${encodeURIComponent(year)}`);
-    const d = await res.json();
-    const val = d.share_pct || 0.0;
-    const trace = {values: [val, 100-val], labels:['Agriculture %','Autres %'], hole:.6, type:'pie', textinfo:'label+percent'};
-    Plotly.react('chart-land', [trace], {title:`Part terres agricoles ${country} - ${year}`});
+    showLoading('chart-land');
+    try {
+      const res = await fetch(`/api/land/share/?country=${encodeURIComponent(country)}&year=${encodeURIComponent(year)}`);
+      const d = await res.json();
+      const val = d.share_pct || 0.0;
+      const trace = {values: [val, 100-val], labels:['Agriculture %','Autres %'], hole:.6, type:'pie', textinfo:'label+percent',marker:{colors:['#198754','#dee2e6']}};
+      Plotly.react('chart-land', [trace], {title:`Part terres agricoles - ${country} (${year})`});
+    } catch(err) {
+      handleError('chart-land', err);
+    } finally {
+      hideLoading('chart-land');
+    }
   }
   document.getElementById('btn-land').addEventListener('click', (e)=>{ e.preventDefault(); loadLand(); });
 
@@ -478,10 +668,17 @@
   async function loadEmpTS() {
     const country = document.getElementById('emp_country').value;
     if (!country) { alert('Choisir country'); return; }
-    const res = await fetch(`/api/employment/timeseries/?country=${encodeURIComponent(country)}`);
-    const data = await res.json();
-    const x = data.map(d=>d.year), y = data.map(d=>d.value);
-    Plotly.react('chart-emp', [{x,y,type:'scatter',mode:'lines+markers'}], {title:`Emploi agricole - ${country}`});
+    showLoading('chart-emp');
+    try {
+      const res = await fetch(`/api/employment/timeseries/?country=${encodeURIComponent(country)}`);
+      const data = await res.json();
+      const x = data.map(d=>d.year), y = data.map(d=>d.value);
+      Plotly.react('chart-emp', [{x,y,type:'scatter',mode:'lines+markers',line:{color:'var(--main-green-light)'}}], {title:`Évolution Emploi Agricole - ${country}`,yaxis:{title:'Nombre Employés'}});
+    } catch(err) {
+      handleError('chart-emp', err);
+    } finally {
+      hideLoading('chart-emp');
+    }
   }
   document.getElementById('btn-emp').addEventListener('click', (e)=>{ e.preventDefault(); loadEmpTS(); });
 
@@ -489,17 +686,34 @@
   async function loadEmpProd() {
     const country = document.getElementById('ep_country').value;
     if (!country) { alert('Choisir country'); return; }
-    const params = q({country, year: document.getElementById('ep_year').value, product: document.getElementById('ep_product').value});
-    const res = await fetch(`/api/employment/vs-production/?${params}`);
-    const data = await res.json();
-    const x = data.map(d=>d.employment), y = data.map(d=>d.production), text = data.map(d=>d.year);
-    Plotly.react('chart-ep', [{x,y,mode:'markers', text, marker:{size:10}}], {title:`Emploi vs Production - ${country}`, xaxis:{title:'Emploi'}, yaxis:{title:'Production'}});
+    showLoading('chart-ep');
+    try {
+      const params = q({country, year: document.getElementById('ep_year').value, product: document.getElementById('ep_product').value});
+      const res = await fetch(`/api/employment/vs-production/?${params}`);
+      const data = await res.json();
+      const x = data.map(d=>d.employment), y = data.map(d=>d.production), text = data.map(d=>d.year);
+      Plotly.react('chart-ep', [{x,y,mode:'markers', text, marker:{size:12,color:'var(--main-green-light)',opacity:0.7}}], {title:`Corrélation Emploi/Production - ${country}`, xaxis:{title:'Nombre Employés Agricoles'}, yaxis:{title:'Production Totale'}});
+    } catch(err) {
+      handleError('chart-ep', err);
+    } finally {
+      hideLoading('chart-ep');
+    }
   }
   document.getElementById('btn-ep').addEventListener('click', (e)=>{ e.preventDefault(); loadEmpProd(); });
 
-  // initial small load (non destructive)
-  window.addEventListener('load', () => {
-    // optional: pre-load a few graphs if default filters available
+  // Initial load on page ready
+  window.addEventListener('load', async () => {
+    await loadStats();
+    // Load default charts if available
+    const defaultCountry = '{{ countries.0 }}';
+    const defaultProduct = '{{ products.0 }}';
+    const defaultYear = '{{ years.0 }}';
+
+    if (defaultProduct && defaultCountry) {
+      document.getElementById('pt_product').value = defaultProduct;
+      document.getElementById('pt_country').value = defaultCountry;
+      await loadProdTS();
+    }
   });
 </script>
 {% endblock %}
