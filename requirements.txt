@@ -1,0 +1,6 @@
+Django
+psycopg2-binary
+pandas
+matplotlib
+plotly
+django-crispy-forms

@@ -1,0 +1,505 @@
+{% extends "base.html" %}
+{% block title %}Dashboard Agricole{% endblock %}
+
+{% block content %}
+<style>
+:root {
+    --main-green: #0f5132;
+    --main-green-light: #198754;
+    --main-green-soft: #d1e7dd;
+    --main-green-hover: #146c43;
+}
+
+/* Remplace les anciens bleus */
+.navbar, .bg-primary {
+    background-color: var(--main-green) !important;
+}
+
+.btn-primary {
+    background-color: var(--main-green-light) !important;
+    border-color: var(--main-green-light) !important;
+}
+
+.btn-primary:hover {
+    background-color: var(--main-green-hover) !important;
+}
+
+.card-header {
+    background-color: var(--main-green-soft) !important;
+    color: var(--main-green) !important;
+}
+
+.sidebar .nav-link.active {
+    background-color: var(--main-green-light) !important;
+    color: white !important;
+}
+
+.sidebar {
+    background-color: var(--main-green) !important;
+}
+</style>
+
+<div class="container-fluid">
+  <h2 class="mb-3">Vue d'ensemble</h2>
+
+  <!-- 1 - Production timeseries -->
+  <div class="card mb-3 chart">
+    <div class="card-body">
+      <h5>1. Production — Série Temporelle</h5>
+      <form id="form-prod-ts" class="row g-2 align-items-end">
+        <div class="col-auto">
+          <label>Country</label>
+          <select id="pt_country" class="form-select">
+            <option value="">Tous</option>
+            {% for c in countries %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="col-auto">
+          <label>Product</label>
+          <select id="pt_product" class="form-select">
+            <option value="">Tous</option>
+            {% for p in products %}<option value="{{ p }}">{{ p }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="col-auto">
+          <button id="btn-prod-ts" class="btn btn-primary">Appliquer</button>
+        </div>
+      </form>
+      <div id="chart-prod-ts" style="height:320px;"></div>
+    </div>
+  </div>
+
+  <!-- 2 - Top N producers -->
+  <div class="card mb-3 chart">
+    <div class="card-body">
+      <h5>2. Top N producteurs (barres)</h5>
+      <form id="form-top" class="row g-2 align-items-end">
+        <div class="col-auto">
+          <label>Product</label>
+          <select id="top_product" class="form-select">
+            <option value="">--</option>
+            {% for p in products %}<option value="{{ p }}">{{ p }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="col-auto">
+          <label>Year</label>
+          <select id="top_year" class="form-select">
+            <option value="">--</option>
+            {% for y in years %}<option value="{{ y }}">{{ y }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="col-auto">
+          <label>N</label>
+          <input id="top_n" class="form-control" type="number" value="10" min="1" />
+        </div>
+        <div class="col-auto">
+          <button id="btn-top" class="btn btn-primary">Appliquer</button>
+        </div>
+      </form>
+      <div id="chart-top" style="height:320px;"></div>
+    </div>
+  </div>
+
+  <!-- 3 - Production vs Price scatter -->
+  <div class="card mb-3 chart">
+    <div class="card-body">
+      <h5>3. Production vs Prix (scatter)</h5>
+      <form id="form-scatter" class="row g-2 align-items-end">
+        <div class="col-auto">
+          <label>Product</label>
+          <select id="sc_product" class="form-select">
+            <option value="">--</option>
+            {% for p in products %}<option value="{{ p }}">{{ p }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="col-auto">
+          <label>Year</label>
+          <select id="sc_year" class="form-select">
+            <option value="">--</option>
+            {% for y in years %}<option value="{{ y }}">{{ y }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="col-auto">
+          <label>Country</label>
+          <select id="sc_country" class="form-select">
+            <option value="">Tous</option>
+            {% for c in countries %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="col-auto">
+          <button id="btn-scatter" class="btn btn-primary">Appliquer</button>
+        </div>
+      </form>
+      <div id="chart-scatter" style="height:360px;"></div>
+    </div>
+  </div>
+
+  <!-- 4 - Double axis: fertilizer vs production -->
+  <div class="card mb-3 chart">
+    <div class="card-body">
+      <h5>4. Engrais vs Production (double axe)</h5>
+      <form id="form-fert" class="row g-2 align-items-end">
+        <div class="col-auto">
+          <label>Product</label>
+          <select id="f_product" class="form-select">
+            <option value="">--</option>
+            {% for p in products %}<option value="{{ p }}">{{ p }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="col-auto">
+          <label>Country</label>
+          <select id="f_country" class="form-select">
+            <option value="">Tous</option>
+            {% for c in countries %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="col-auto">
+          <label>Fertilizer</label>
+          <select id="f_type" class="form-select">
+            <option value="">Tous</option>
+            {% for f in fertilizer_types %}<option value="{{ f }}">{{ f }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="col-auto">
+          <button id="btn-fert" class="btn btn-primary">Appliquer</button>
+        </div>
+      </form>
+      <div id="chart-fert" style="height:360px;"></div>
+    </div>
+  </div>
+
+  <!-- 5 - Price timeseries -->
+  <div class="card mb-3 chart">
+    <div class="card-body">
+      <h5>5. Prix — Série Temporelle</h5>
+      <form id="form-price-ts" class="row g-2 align-items-end">
+        <div class="col-auto">
+          <label>Product</label>
+          <select id="pt_product" class="form-select">
+            <option value="">--</option>
+            {% for p in products %}<option value="{{ p }}">{{ p }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="col-auto">
+          <label>Country</label>
+          <select id="pt_country2" class="form-select">
+            <option value="">Tous</option>
+            {% for c in countries %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="col-auto">
+          <button id="btn-price-ts" class="btn btn-primary">Appliquer</button>
+        </div>
+      </form>
+      <div id="chart-price-ts" style="height:320px;"></div>
+    </div>
+  </div>
+
+  <!-- 6 - Price choropleth (bar fallback) -->
+  <div class="card mb-3 chart">
+    <div class="card-body">
+      <h5>6. Prix par Pays (Carte / Bar Chart)</h5>
+      <form id="form-choropleth" class="row g-2 align-items-end">
+        <div class="col-auto">
+          <label>Product</label>
+          <select id="ch_product" class="form-select">
+            <option value="">--</option>
+            {% for p in products %}<option value="{{ p }}">{{ p }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="col-auto">
+          <label>Year</label>
+          <select id="ch_year" class="form-select">
+            <option value="">--</option>
+            {% for y in years %}<option value="{{ y }}">{{ y }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="col-auto">
+          <button id="btn-choropleth" class="btn btn-primary">Appliquer</button>
+        </div>
+      </form>
+      <div id="chart-choropleth" style="height:360px;"></div>
+    </div>
+  </div>
+
+  <!-- 7 - FDI stacked -->
+  <div class="card mb-3 chart">
+    <div class="card-body">
+      <h5>7. IDE Entrants — Barres Empilées</h5>
+      <form id="form-fdi" class="row g-2 align-items-end">
+        <div class="col-auto">
+          <label>Year</label>
+          <select id="fdi_year" class="form-select">
+            <option value="">--</option>
+            {% for y in years %}<option value="{{ y }}">{{ y }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="col-auto">
+          <button id="btn-fdi" class="btn btn-primary">Appliquer</button>
+        </div>
+      </form>
+      <div id="chart-fdi" style="height:360px;"></div>
+    </div>
+  </div>
+
+  <!-- 8 - Price boxplot -->
+  <div class="card mb-3 chart">
+    <div class="card-body">
+      <h5>8. Distribution des Prix — Boxplot</h5>
+      <form id="form-box" class="row g-2 align-items-end">
+        <div class="col-auto">
+          <label>Product</label>
+          <select id="bx_product" class="form-select">
+            <option value="">--</option>
+            {% for p in products %}<option value="{{ p }}">{{ p }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="col-auto">
+          <label>Country (optionnel)</label>
+          <select id="bx_country" class="form-select">
+            <option value="">Tous</option>
+            {% for c in countries %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="col-auto">
+          <button id="btn-box" class="btn btn-primary">Appliquer</button>
+        </div>
+      </form>
+      <div id="chart-box" style="height:360px;"></div>
+    </div>
+  </div>
+
+  <!-- 9 - Land share gauge -->
+  <div class="card mb-3 chart">
+    <div class="card-body">
+      <h5>9. Part des terres agricoles — Jauge</h5>
+      <form id="form-land" class="row g-2 align-items-end">
+        <div class="col-auto">
+          <label>Country</label>
+          <select id="land_country" class="form-select">
+            <option value="">--</option>
+            {% for c in countries %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="col-auto">
+          <label>Year</label>
+          <select id="land_year" class="form-select">
+            <option value="">--</option>
+            {% for y in years %}<option value="{{ y }}">{{ y }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="col-auto">
+          <button id="btn-land" class="btn btn-primary">Appliquer</button>
+        </div>
+      </form>
+      <div id="chart-land" style="height:260px;"></div>
+    </div>
+  </div>
+
+  <!-- 10 - Employment timeseries -->
+  <div class="card mb-3 chart">
+    <div class="card-body">
+      <h5>10. Emploi — Série Temporelle</h5>
+      <form id="form-emp" class="row g-2 align-items-end">
+        <div class="col-auto">
+          <label>Country</label>
+          <select id="emp_country" class="form-select">
+            <option value="">--</option>
+            {% for c in countries %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="col-auto">
+          <label>Source (optionnel)</label>
+          <input id="emp_source" class="form-control" placeholder="source" />
+        </div>
+        <div class="col-auto">
+          <button id="btn-emp" class="btn btn-primary">Appliquer</button>
+        </div>
+      </form>
+      <div id="chart-emp" style="height:320px;"></div>
+    </div>
+  </div>
+
+  <!-- 11 - Employment vs Production scatter -->
+  <div class="card mb-3 chart">
+    <div class="card-body">
+      <h5>11. Emploi vs Production (scatter)</h5>
+      <form id="form-emp-prod" class="row g-2 align-items-end">
+        <div class="col-auto">
+          <label>Country</label>
+          <select id="ep_country" class="form-select">
+            <option value="">--</option>
+            {% for c in countries %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="col-auto">
+          <label>Year (opt)</label>
+          <select id="ep_year" class="form-select">
+            <option value="">Tous</option>
+            {% for y in years %}<option value="{{ y }}">{{ y }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="col-auto">
+          <label>Product (opt)</label>
+          <select id="ep_product" class="form-select">
+            <option value="">Tous</option>
+            {% for p in products %}<option value="{{ p }}">{{ p }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="col-auto">
+          <button id="btn-ep" class="btn btn-primary">Appliquer</button>
+        </div>
+      </form>
+      <div id="chart-ep" style="height:420px;"></div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // helper
+  const q = (obj) => Object.entries(obj).filter(([k,v]) => v !== "" && v !== null && v !== undefined).map(([k,v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`).join("&");
+
+  // 1 - production timeseries
+  async function loadProdTS() {
+    const params = q({product: document.getElementById('pt_product')?.value, country: document.getElementById('pt_country')?.value});
+    const res = await fetch(`/api/production/timeseries/?${params}`);
+    const data = await res.json();
+    const x = data.map(d=>d.year), y = data.map(d=>d.value);
+    Plotly.react('chart-prod-ts', [{x,y,type:'scatter',mode:'lines+markers'}], {title:'Production annuelle'});
+  }
+  document.getElementById('btn-prod-ts').addEventListener('click', (e)=>{ e.preventDefault(); loadProdTS(); });
+
+  // 2 - top producers
+  async function loadTop() {
+    const product = document.getElementById('top_product').value;
+    const year = document.getElementById('top_year').value;
+    const n = document.getElementById('top_n').value;
+    if (!product || !year) { alert('Choisir product & year'); return;}
+    const res = await fetch(`/api/production/top/?product=${encodeURIComponent(product)}&year=${encodeURIComponent(year)}&n=${n}`);
+    const data = await res.json();
+    const y = data.map(d=>d.country), x = data.map(d=>d.value);
+    Plotly.react('chart-top', [{x,y,type:'bar',orientation:'h'}], {title:`Top ${n} producteurs - ${product} (${year})`});
+  }
+  document.getElementById('btn-top').addEventListener('click', (e)=>{ e.preventDefault(); loadTop(); });
+
+  // 3 - scatter prod vs price
+  async function loadScatter() {
+    const product = document.getElementById('sc_product').value;
+    const year = document.getElementById('sc_year').value;
+    const country = document.getElementById('sc_country').value;
+    if (!product) { alert('Choisir product'); return; }
+    const params = q({product, year, country});
+    const res = await fetch(`/api/production/vs-price/?${params}`);
+    const data = await res.json();
+    const x = data.map(d=>d.production_quantity), y = data.map(d=>d.price), text = data.map(d=>d.country);
+    Plotly.react('chart-scatter', [{x,y,mode:'markers',text,marker:{size:10}}], {title:'Production vs Prix', xaxis:{title:'Production'}, yaxis:{title:'Prix'}});
+  }
+  document.getElementById('btn-scatter').addEventListener('click', (e)=>{ e.preventDefault(); loadScatter(); });
+
+  // 4 - fertilizer vs production (double axis)
+  async function loadFert() {
+    const product = document.getElementById('f_product').value;
+    if (!product) { alert('Choisir product'); return; }
+    const params = q({product, country:document.getElementById('f_country').value, fertilizer_type:document.getElementById('f_type').value});
+    const res = await fetch(`/api/production/fertilizer-vs-production/?${params}`);
+    const d = await res.json();
+    const yrs = d.years, prod = d.production, fert = d.fertilizer;
+    const t1 = {x:yrs, y:prod, name:'Production', yaxis:'y1', type:'scatter', mode:'lines+markers'};
+    const t2 = {x:yrs, y:fert, name:'Engrais', yaxis:'y2', type:'scatter', mode:'lines+markers'};
+    const layout = {title:'Engrais vs Production', yaxis:{title:'Production'}, yaxis2:{title:'Engrais', overlaying:'y', side:'right'}};
+    Plotly.react('chart-fert', [t1,t2], layout);
+  }
+  document.getElementById('btn-fert').addEventListener('click', (e)=>{ e.preventDefault(); loadFert(); });
+
+  // 5 - price timeseries
+  async function loadPriceTS() {
+    const product = document.getElementById('pt_product').value;
+    if (!product) { alert('Choisir product'); return; }
+    const params = q({product, country: document.getElementById('pt_country2').value});
+    const res = await fetch(`/api/price/timeseries/?${params}`);
+    const data = await res.json();
+    const x = data.map(d=>d.year), y = data.map(d=>d.value);
+    Plotly.react('chart-price-ts', [{x,y,type:'scatter',mode:'lines+markers'}], {title:'Prix moyen'});
+  }
+  document.getElementById('btn-price-ts').addEventListener('click', (e)=>{ e.preventDefault(); loadPriceTS(); });
+
+  // 6 - choropleth fallback bar
+  async function loadChoropleth() {
+    const product = document.getElementById('ch_product').value;
+    const year = document.getElementById('ch_year').value;
+    if (!product || !year) { alert('Choisir product & year'); return; }
+    const res = await fetch(`/api/price/by-country/?product=${encodeURIComponent(product)}&year=${encodeURIComponent(year)}`);
+    const data = await res.json();
+    const x = data.map(d=>d.country), y = data.map(d=>d.value);
+    Plotly.react('chart-choropleth', [{x,y,type:'bar'}], {title:`Prix par pays (${product} - ${year})`});
+  }
+  document.getElementById('btn-choropleth').addEventListener('click', (e)=>{ e.preventDefault(); loadChoropleth(); });
+
+  // 7 - FDI stacked
+  async function loadFDI() {
+    const year = document.getElementById('fdi_year').value;
+    if (!year) { alert('Choisir year'); return; }
+    const res = await fetch(`/api/fdi/stacked/?year=${encodeURIComponent(year)}`);
+    const data = await res.json();
+    const receiving = data.receiving, investing = data.investing, matrix = data.matrix;
+    const traces = investing.map(inv => ({x: receiving, y: matrix[inv], name: inv, type: 'bar'}));
+    Plotly.react('chart-fdi', traces, {barmode:'stack', title:`IDE entrants (${year})`});
+  }
+  document.getElementById('btn-fdi').addEventListener('click', (e)=>{ e.preventDefault(); loadFDI(); });
+
+  // 8 - boxplot
+  async function loadBox() {
+    const product = document.getElementById('bx_product').value;
+    if (!product) { alert('Choisir product'); return; }
+    const res = await fetch(`/api/price/boxplot/?product=${encodeURIComponent(product)}&country=${encodeURIComponent(document.getElementById('bx_country').value)}`);
+    const data = await res.json();
+    const traces = data.map(g => ({y: g.values, type:'box', name: g.country}));
+    Plotly.react('chart-box', traces, {title:'Distribution des prix'});
+  }
+  document.getElementById('btn-box').addEventListener('click', (e)=>{ e.preventDefault(); loadBox(); });
+
+  // 9 - land share gauge (donut)
+  async function loadLand() {
+    const country = document.getElementById('land_country').value;
+    const year = document.getElementById('land_year').value;
+    if (!country || !year) { alert('Choisir country & year'); return; }
+    const res = await fetch(`/api/land/share/?country=${encodeURIComponent(country)}&year=${encodeURIComponent(year)}`);
+    const d = await res.json();
+    const val = d.share_pct || 0.0;
+    const trace = {values: [val, 100-val], labels:['Agriculture %','Autres %'], hole:.6, type:'pie', textinfo:'label+percent'};
+    Plotly.react('chart-land', [trace], {title:`Part terres agricoles ${country} - ${year}`});
+  }
+  document.getElementById('btn-land').addEventListener('click', (e)=>{ e.preventDefault(); loadLand(); });
+
+  // 10 - employment timeseries
+  async function loadEmpTS() {
+    const country = document.getElementById('emp_country').value;
+    if (!country) { alert('Choisir country'); return; }
+    const res = await fetch(`/api/employment/timeseries/?country=${encodeURIComponent(country)}`);
+    const data = await res.json();
+    const x = data.map(d=>d.year), y = data.map(d=>d.value);
+    Plotly.react('chart-emp', [{x,y,type:'scatter',mode:'lines+markers'}], {title:`Emploi agricole - ${country}`});
+  }
+  document.getElementById('btn-emp').addEventListener('click', (e)=>{ e.preventDefault(); loadEmpTS(); });
+
+  // 11 - employment vs production scatter
+  async function loadEmpProd() {
+    const country = document.getElementById('ep_country').value;
+    if (!country) { alert('Choisir country'); return; }
+    const params = q({country, year: document.getElementById('ep_year').value, product: document.getElementById('ep_product').value});
+    const res = await fetch(`/api/employment/vs-production/?${params}`);
+    const data = await res.json();
+    const x = data.map(d=>d.employment), y = data.map(d=>d.production), text = data.map(d=>d.year);
+    Plotly.react('chart-ep', [{x,y,mode:'markers', text, marker:{size:10}}], {title:`Emploi vs Production - ${country}`, xaxis:{title:'Emploi'}, yaxis:{title:'Production'}});
+  }
+  document.getElementById('btn-ep').addEventListener('click', (e)=>{ e.preventDefault(); loadEmpProd(); });
+
+  // initial small load (non destructive)
+  window.addEventListener('load', () => {
+    // optional: pre-load a few graphs if default filters available
+  });
+</script>
+{% endblock %}
